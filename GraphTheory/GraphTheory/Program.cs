@@ -99,6 +99,35 @@ namespace GraphTheory
             graph5.Print();
             graph5.Save(@"C:\Users\krisy\OneDrive\Documents\GraphTheory\GraphTheory\graph5.txt");
 
+            var graph6 = new Graph();
+            a = new Vertex("Mocква");
+            b = new Vertex("Сочи");
+            c = new Vertex("Уфа");
+            d = new Vertex("Омск");
+            e = new Vertex("Самара");
+            f = new Vertex("Пермь");
+            h = new Vertex("Курск");
+            k = new Vertex("Яр");
+            AddVertex(graph6, a, b, c, d, e, f, h, k);
+
+            #region Добавление ребер взвешенного графа с городами
+            graph6.AddEdge(a, b, 45);
+            graph6.AddEdge(a, c, 65);
+            graph6.AddEdge(a, d, 76);
+            graph6.AddEdge(b, e, 32);
+            graph6.AddEdge(b, k, 75);
+            graph6.AddEdge(c, f, 4);
+            graph6.AddEdge(c, k, 12);
+            graph6.AddEdge(f, k, 10);
+            #endregion
+
+            Console.WriteLine("\nВзвешенный граф у которого вершинаим являются города:");
+            graph6.Print();
+            graph6.Save(@"C:\Users\krisy\OneDrive\Documents\GraphTheory\GraphTheory\graph6.txt");
+
+            var graph7 = new Graph(@"C:\Users\krisy\OneDrive\Documents\GraphTheory\GraphTheory\graph6.txt");
+            graph7.Print();
+
             #region Проверки на некоректный ввод
             Console.Write("\nУдаление несуществующей вершины: ");
             graph4.DeleteVertex(null);

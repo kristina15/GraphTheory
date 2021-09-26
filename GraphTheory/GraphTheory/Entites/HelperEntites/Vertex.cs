@@ -5,7 +5,7 @@
         private bool mark = false;
         private int subTree = 0;
 
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         public bool Mark
         {
@@ -25,9 +25,14 @@
             }
         }
 
-        public Vertex(int id)
+        public Vertex(string id)
         {
             Id = id;
+        }
+
+        public Vertex(int id)
+        {
+            Id = id.ToString();
         }
 
         public override string ToString()

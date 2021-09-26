@@ -11,13 +11,13 @@ namespace GraphTheory.Entites
     {
         private IDictionary<Vertex, Dictionary<Vertex, int>> _vertexWeight;
         private Random _randomNumber;
-        private bool _oriented;
+        public bool Oriented { get; set; }
 
         public Graph()
         {
             _vertexWeight = new Dictionary<Vertex, Dictionary<Vertex, int>>();
             _randomNumber = new Random();
-            _oriented = true;
+            Oriented = true;
         }
 
         /// <summary>
@@ -34,16 +34,16 @@ namespace GraphTheory.Entites
                 foreach (var s in StrFromFile)
                 {
                     vertex = s.Split(' ');
-                    AddVertex(new Vertex(int.Parse(vertex[0])));
+                    AddVertex(new Vertex(vertex[0]));
                 }
 
                 foreach (var s in StrFromFile)
                 {
                     vertex = s.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    var from = new Vertex(int.Parse(vertex[0]));
+                    var from = new Vertex(vertex[0]);
                     for (int k = 1; k < vertex.Length; k += 2)
                     {
-                        var to = new Vertex(int.Parse(vertex[k]));
+                        var to = new Vertex(vertex[k]);
                         int weight = int.Parse(vertex[k + 1]);
                         AddEdge(from, to, weight);
                     }
@@ -55,7 +55,7 @@ namespace GraphTheory.Entites
         {
             _vertexWeight = new Dictionary<Vertex, Dictionary<Vertex, int>>();
             _randomNumber = new Random();
-            _oriented = oriented;
+            Oriented = oriented;
         }
 
         /// <summary>
@@ -93,10 +93,11 @@ namespace GraphTheory.Entites
         /// Конструктор - копия
         /// </summary>
         /// <param name="G"></param>
-        public Graph(Graph G) : this()
+        public Graph(Graph G)
         {
             _vertexWeight = new Dictionary<Vertex, Dictionary<Vertex, int>>(G._vertexWeight);
             _randomNumber = new Random();
+            Oriented = G.Oriented;
         }
 
         /// <summary>
@@ -134,11 +135,11 @@ namespace GraphTheory.Entites
         /// <param name="value"></param>
         public void AddVertex(Vertex value)
         {
-            if (value != null)
+            try
             {
                 _vertexWeight.Add(value, new Dictionary<Vertex, int>());
             }
-            else
+            catch
             {
                 Console.WriteLine("Uncorrect vertex");
             }
@@ -151,23 +152,24 @@ namespace GraphTheory.Entites
         /// <param name="oriented"></param>
         public void AddEdge(Vertex from, Vertex to, int weight = 1, bool oriented = false)
         {
-            if (from == null || to == null)
+            try
             {
-                Console.WriteLine("Uncorrect edge");
-                return;
-            }
-
-            foreach (var item in _vertexWeight)
-            {
-                if (from.Id == item.Key.Id && !item.Value.ContainsKey(to))
+                foreach (var item in _vertexWeight)
                 {
-                    item.Value.Add(to, weight);
+                    if (from.Id == item.Key.Id && !item.Value.ContainsKey(to))
+                    {
+                        item.Value.Add(to, weight);
+                    }
+                }
+
+                if (!Oriented && !oriented)
+                {
+                    AddEdge(to, from, weight, true);
                 }
             }
-
-            if (!_oriented && !oriented)
+            catch
             {
-                AddEdge(to, from, weight, true);
+                Console.WriteLine("Uncorrect edge");
             }
         }
 
@@ -178,30 +180,31 @@ namespace GraphTheory.Entites
         /// <param name="oriented"></param>
         public void DeleteEdge(Vertex from, Vertex to, int weight = 1, bool oriented = false)
         {
-            if (from == null || to == null)
+            try
             {
-                Console.WriteLine("Uncorrect edge");
-                return;
-            }
-
-            foreach (var v in _vertexWeight)
-            {
-                if (v.Key.Id == from.Id)
+                foreach (var v in _vertexWeight)
                 {
-                    foreach (var e in v.Value)
+                    if (v.Key.Id == from.Id)
                     {
-                        if (e.Key.Id == to.Id && e.Value == weight)
+                        foreach (var e in v.Value)
                         {
-                            v.Value.Remove(e.Key);
-                            break;
+                            if (e.Key.Id == to.Id && e.Value == weight)
+                            {
+                                v.Value.Remove(e.Key);
+                                break;
+                            }
                         }
                     }
                 }
-            }
 
-            if (!_oriented && !oriented)
+                if (!Oriented && !oriented)
+                {
+                    DeleteEdge(to, from, weight, true);
+                }
+            }
+            catch
             {
-                DeleteEdge(to, from, weight, true);
+                Console.WriteLine("Uncorrect edge");
             }
         }
 
@@ -211,7 +214,7 @@ namespace GraphTheory.Entites
         /// <param name="value"></param>
         public void DeleteVertex(Vertex value)
         {
-            if (value != null)
+            try
             {
                 foreach (var v in _vertexWeight)
                 {
@@ -234,7 +237,7 @@ namespace GraphTheory.Entites
                     }
                 }
             }
-            else
+            catch
             {
                 Console.WriteLine("Uncorrect vertex");
             }
