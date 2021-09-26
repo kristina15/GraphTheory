@@ -23,33 +23,19 @@ namespace GraphTheory
             #endregion
 
             #region Добавление ребер ориентированного графа
-            var edge1 = new Edge(a, b);
-            var edge2 = new Edge(a, c);
-            var edge3 = new Edge(a, d);
-            var edge4 = new Edge(b, c);
-            var edge5 = new Edge(b, e);
-            var edge6 = new Edge(b, k);
-            var edge7 = new Edge(c, d);
-            var edge8 = new Edge(c, f);
-            var edge9 = new Edge(c, k);
-            var edge10 = new Edge(d, f);
-            var edge11 = new Edge(d, k);
-            var edge12 = new Edge(f, k);
-            var edge13 = new Edge(e, f);
-
-            graph.AddEdge(edge1);
-            graph.AddEdge(edge2, false);
-            graph.AddEdge(edge3);
-            graph.AddEdge(edge4);
-            graph.AddEdge(edge5);
-            graph.AddEdge(edge6);
-            graph.AddEdge(edge7);
-            graph.AddEdge(edge8);
-            graph.AddEdge(edge9);
-            graph.AddEdge(edge10);
-            graph.AddEdge(edge11);
-            graph.AddEdge(edge12);
-            graph.AddEdge(edge13);
+            graph.AddEdge(a, b);
+            graph.AddEdge(a, c, 1);
+            graph.AddEdge(a, d);
+            graph.AddEdge(b, c);
+            graph.AddEdge(b, e);
+            graph.AddEdge(b, k);
+            graph.AddEdge(c, d);
+            graph.AddEdge(c, f);
+            graph.AddEdge(c, k);
+            graph.AddEdge(d, f);
+            graph.AddEdge(d, k);
+            graph.AddEdge(f, k);
+            graph.AddEdge(e, f);
             #endregion
 
             Console.WriteLine("Исходный граф (ориентированный):");
@@ -64,7 +50,7 @@ namespace GraphTheory
             Console.WriteLine("\nГраф после удаления вершины 2:");
             graph2.Print();
 
-            graph2.DeleteEdge(edge12);
+            graph2.DeleteEdge(f, k, 1);
             Console.WriteLine("\nГраф после удаления ребра (6, 8):");
             graph2.Print();
 
@@ -75,31 +61,20 @@ namespace GraphTheory
             graph3.Print();
             graph3.Save(@"C:\Users\krisy\OneDrive\Documents\GraphTheory\GraphTheory\graph3.txt");
 
-            var graph4 = new Graph();
+            var graph4 = new Graph(false);
             AddVertex(graph4, a, b, c, d, e, f, h, k);
 
             #region Добавление ребер неориентированного графа (с петлями)
-            var edge41 = new Edge(a, b);
-            var edge42 = new Edge(a, c);
-            var edge43 = new Edge(a, d);
-            var edge44 = new Edge(a, a);
-            var edge45 = new Edge(b, e);
-            var edge46 = new Edge(b, k);
-            var edge47 = new Edge(k, k);
-            var edge48 = new Edge(c, f);
-            var edge49 = new Edge(c, k);
-            var edge412 = new Edge(f, k);
-
-            graph4.AddEdge(edge41, false);
-            graph4.AddEdge(edge42, false);
-            graph4.AddEdge(edge43, false);
-            graph4.AddEdge(edge44);
-            graph4.AddEdge(edge45, false);
-            graph4.AddEdge(edge47);
-            graph4.AddEdge(edge48, false);
-            graph4.AddEdge(edge46, false);
-            graph4.AddEdge(edge49, false);
-            graph4.AddEdge(edge412, false);
+            graph4.AddEdge(a, b, 1);
+            graph4.AddEdge(a, c, 1);
+            graph4.AddEdge(a, d, 1);
+            graph4.AddEdge(a, a);
+            graph4.AddEdge(b, e, 1);
+            graph4.AddEdge(k, k);
+            graph4.AddEdge(c, f, 1);
+            graph4.AddEdge(c, k, 1);
+            graph4.AddEdge(b, k, 1);
+            graph4.AddEdge(f, k, 1);
             #endregion
 
             Console.WriteLine("\nНеориентированный граф (c петлями):");
@@ -110,23 +85,14 @@ namespace GraphTheory
             AddVertex(graph5, a, b, c, d, e, f, h, k);
 
             #region Добавление ребер взвешенного графа
-            var edge51 = new Edge(a, b, 45);
-            var edge52 = new Edge(a, c, 65);
-            var edge53 = new Edge(a, d, 76);
-            var edge55 = new Edge(b, e, 32);
-            var edge56 = new Edge(b, k, 75);
-            var edge58 = new Edge(c, f, 4);
-            var edge59 = new Edge(c, k, 12);
-            var edge512 = new Edge(f, k, 10);
-
-            graph5.AddEdge(edge51);
-            graph5.AddEdge(edge52);
-            graph5.AddEdge(edge53);
-            graph5.AddEdge(edge55);
-            graph5.AddEdge(edge58);
-            graph5.AddEdge(edge56);
-            graph5.AddEdge(edge59);
-            graph5.AddEdge(edge512);
+            graph5.AddEdge(a, b, 45);
+            graph5.AddEdge(a, c, 65);
+            graph5.AddEdge(a, d, 76);
+            graph5.AddEdge(b, e, 32);
+            graph5.AddEdge(b, k, 75);
+            graph5.AddEdge(c, f, 4);
+            graph5.AddEdge(c, k, 12);
+            graph5.AddEdge(f, k, 10);
             #endregion
 
             Console.WriteLine("\nВзвешенный граф:");
@@ -138,13 +104,13 @@ namespace GraphTheory
             graph4.DeleteVertex(null);
 
             Console.Write("\nУдаление ребра без вершины 'from': ");
-            graph4.DeleteEdge(new Edge(null, c));
+            graph4.DeleteEdge(null, c);
 
             Console.Write("\nУдаление ребра без вершины 'to': ");
-            graph4.DeleteEdge(new Edge(c, null));
+            graph4.DeleteEdge(c, null);
 
             Console.Write("\nУдаление несуществующего ребра: ");
-            graph4.DeleteEdge(null);
+            graph4.DeleteEdge(null, null);
             #endregion
         }
 
