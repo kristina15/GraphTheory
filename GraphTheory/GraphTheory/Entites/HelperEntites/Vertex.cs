@@ -3,7 +3,6 @@
     public class Vertex
     {
         private bool mark = false;
-        private int subTree = 0;
 
         public string Id { get; set; }
 
@@ -13,15 +12,6 @@
             set
             {
                 mark = value;
-            }
-        }
-
-        public int SubTree
-        {
-            get => subTree;
-            set
-            {
-                subTree = value;
             }
         }
 
