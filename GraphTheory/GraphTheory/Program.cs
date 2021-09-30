@@ -8,151 +8,150 @@ namespace GraphTheory
     {
         public static void Main()
         {
-            var graph = new Graph();
-
-            #region Добавление вершин ориентированного графа
-            var a = new Vertex(1);
-            var b = new Vertex(2);
-            var c = new Vertex(3);
-            var d = new Vertex(4);
-            var e = new Vertex(5);
-            var f = new Vertex(6);
-            var h = new Vertex(7);
-            var k = new Vertex(8);
-            AddVertex(graph, a, b, c, d, e, f, h, k);
-            #endregion
-
-            #region Добавление ребер ориентированного графа
-            graph.AddEdge(a, b);
-            graph.AddEdge(a, c, 1);
-            graph.AddEdge(a, d);
-            graph.AddEdge(b, c);
-            graph.AddEdge(b, e);
-            graph.AddEdge(b, k);
-            graph.AddEdge(c, d);
-            graph.AddEdge(c, f);
-            graph.AddEdge(c, k);
-            graph.AddEdge(d, f);
-            graph.AddEdge(d, k);
-            graph.AddEdge(f, k);
-            graph.AddEdge(e, f);
-            #endregion
-
-            Console.WriteLine("Исходный граф (ориентированный):");
-            graph.Print();
-            graph.Save(@"C:\Users\krisy\OneDrive\Documents\GraphTheory\GraphTheory\graph1.txt");
-
-            var graph2 = new Graph(@"C:\Users\krisy\source\repos\GraphTheory\graph1.txt");
-            Console.WriteLine("\nГраф-копия:");
-            graph2.Print();
-
-            graph2.DeleteVertex(b);
-            Console.WriteLine("\nГраф после удаления вершины 2:");
-            graph2.Print();
-
-            graph2.DeleteEdge(f, k, 1);
-            Console.WriteLine("\nГраф после удаления ребра (6, 8):");
-            graph2.Print();
-
-            graph2.Save(@"C:\Users\krisy\OneDrive\Documents\GraphTheory\GraphTheory\graph2.txt");
-
-            var graph3 = new Graph(0.2);
-            Console.WriteLine("\nСлучайный граф:");
-            graph3.Print();
-            graph3.Save(@"C:\Users\krisy\OneDrive\Documents\GraphTheory\GraphTheory\graph3.txt");
-
-            var graph4 = new Graph(false);
-            AddVertex(graph4, a, b, c, d, e, f, h, k);
-
-            #region Добавление ребер неориентированного графа (с петлями)
-            graph4.AddEdge(a, b, 1);
-            graph4.AddEdge(a, c, 1);
-            graph4.AddEdge(a, d, 1);
-            graph4.AddEdge(a, a);
-            graph4.AddEdge(b, e, 1);
-            graph4.AddEdge(k, k);
-            graph4.AddEdge(c, f, 1);
-            graph4.AddEdge(c, k, 1);
-            graph4.AddEdge(b, k, 1);
-            graph4.AddEdge(f, k, 1);
-            #endregion
-
-            Console.WriteLine("\nНеориентированный граф (c петлями):");
-            graph4.Print();
-            graph4.Save(@"C:\Users\krisy\OneDrive\Documents\GraphTheory\GraphTheory\graph4.txt");
-
-            var graph5 = new Graph();
-            AddVertex(graph5, a, b, c, d, e, f, h, k);
-
-            #region Добавление ребер взвешенного графа
-            graph5.AddEdge(a, b, 45);
-            graph5.AddEdge(a, c, 65);
-            graph5.AddEdge(a, d, 76);
-            graph5.AddEdge(b, e, 32);
-            graph5.AddEdge(b, k, 75);
-            graph5.AddEdge(c, f, 4);
-            graph5.AddEdge(c, k, 12);
-            graph5.AddEdge(f, k, 10);
-            #endregion
-
-            Console.WriteLine("\nВзвешенный граф:");
-            graph5.Print();
-            graph5.Save(@"C:\Users\krisy\OneDrive\Documents\GraphTheory\GraphTheory\graph5.txt");
-
-            var graph6 = new Graph();
-            a = new Vertex("Mocква");
-            b = new Vertex("Сочи");
-            c = new Vertex("Уфа");
-            d = new Vertex("Омск");
-            e = new Vertex("Самара");
-            f = new Vertex("Пермь");
-            h = new Vertex("Курск");
-            k = new Vertex("Яр");
-            AddVertex(graph6, a, b, c, d, e, f, h, k);
-
-            #region Добавление ребер взвешенного графа с городами
-            graph6.AddEdge(a, b, 45);
-            graph6.AddEdge(a, c, 65);
-            graph6.AddEdge(a, d, 76);
-            graph6.AddEdge(b, e, 32);
-            graph6.AddEdge(b, k, 75);
-            graph6.AddEdge(c, f, 4);
-            graph6.AddEdge(c, k, 12);
-            graph6.AddEdge(f, k, 10);
-            #endregion
-
-            Console.WriteLine("\nВзвешенный граф у которого вершинаим являются города:");
-            graph6.Print();
-            graph6.Save(@"C:\Users\krisy\OneDrive\Documents\GraphTheory\GraphTheory\graph6.txt");
-
-            var graph7 = new Graph(@"C:\Users\krisy\OneDrive\Documents\GraphTheory\GraphTheory\graph6.txt");
-            graph7.Print();
-
-            #region Проверки на некоректный ввод
-            Console.Write("\nУдаление несуществующей вершины: ");
-            graph4.DeleteVertex(null);
-
-            Console.Write("\nУдаление ребра без вершины 'from': ");
-            graph4.DeleteEdge(null, c);
-
-            Console.Write("\nУдаление ребра без вершины 'to': ");
-            graph4.DeleteEdge(c, null);
-
-            Console.Write("\nУдаление несуществующего ребра: ");
-            graph4.DeleteEdge(null, null);
-            #endregion
+            Graph graph = null;
+            bool flag;
+            int choice;
+            do
+            {
+                Console.Write("Выберите действие:\n\t1. Создать новый граф\n\t2. Считать из файла\nВВОД:");
+                flag = int.TryParse(Console.ReadLine(), out choice);
+            } while (!flag);
+            switch (choice)
+            {
+                case 1:
+                    graph = new Graph();
+                    GetOriented(ref graph);
+                    GetWeiting(ref graph);
+                    break;
+                case 2:
+                    graph = new Graph(@"C:\Users\krisy\OneDrive\Documents\GraphTheory\GraphTheory\graph.txt");
+                    break;
+            }
+            while (true)
+            {
+                do
+                {
+                    Console.Write("Выберите действие:\n\t1. Добавить вершину\n\t2. Удалить вершину\n\t3. Добавить ребро\n\t4. Удалить ребро\n\t5. Показать граф\n\t6. Выход\nВВОД:");
+                    flag = int.TryParse(Console.ReadLine(), out choice);
+                } while (!flag);
+                string name;
+                string from;
+                string to;
+                string weight;
+                switch (choice)
+                {
+                    case 1:
+                        Console.Write("Введите имя вершины: ");
+                        name = Console.ReadLine();
+                        graph.AddVertex(new Vertex(name));
+                        break;
+                    case 2:
+                        Console.Write("Введите имя вершины: ");
+                        name = Console.ReadLine();
+                        graph.DeleteVertex(new Vertex(name));
+                        break;
+                    case 3:
+                        Console.Write("Введите имя вершины \"откуда\": ");
+                        from = Console.ReadLine();
+                        Console.Write("Введите имя вершины \"куда\": ");
+                        to = Console.ReadLine();
+                        if (graph.Weiting == true)
+                        {
+                            Console.Write("Введите вес вершины: ");
+                            weight = Console.ReadLine();
+                            if (!string.IsNullOrEmpty(weight))
+                            {
+                                graph.AddEdge(new Vertex(from), new Vertex(to), int.Parse(weight), graph.Oriented);
+                            }
+                        }
+                        else
+                        {
+                            graph.AddEdge(new Vertex(from), new Vertex(to), 1, graph.Oriented);
+                        }
+                        break;
+                    case 4:
+                        Console.Write("Введите имя вершины \"откуда\": ");
+                        from = Console.ReadLine();
+                        Console.Write("Введите имя вершины \"куда\": ");
+                        to = Console.ReadLine();
+                        if (graph.Weiting)
+                        {
+                            Console.Write("Введите вес вершины: ");
+                            weight = Console.ReadLine();
+                            if (!string.IsNullOrWhiteSpace(weight))
+                            {
+                                graph.DeleteEdge(new Vertex(from), new Vertex(to), int.Parse(weight), graph.Oriented);
+                            }
+                        }
+                        else
+                        {
+                            graph.DeleteEdge(new Vertex(from), new Vertex(to), 1, graph.Oriented);
+                        }
+                        break;
+                    case 5:
+                        graph.Print();
+                        break;
+                    case 6:
+                        do
+                        {
+                            Console.Write("Хотите сохранить изменения?\n\t1.Да\n\t2.Нет\nВВОД:");
+                            flag = int.TryParse(Console.ReadLine(), out choice);
+                        } while (!flag);
+                        switch (choice)
+                        {
+                            case 1:
+                                graph.Save(@"C:\Users\krisy\OneDrive\Documents\GraphTheory\GraphTheory\graph.txt");
+                                return;
+                            case 2:
+                                return;
+                        }
+                        break;
+                    case 7:
+                        return;
+                    default:
+                        break;
+                }
+            }
         }
 
-        private static void AddVertex(Graph graph, Vertex a, Vertex b, Vertex c, Vertex d, Vertex e, Vertex f, Vertex h, Vertex k)
+        private static void GetWeiting(ref Graph graph9)
         {
-            graph.AddVertex(a);
-            graph.AddVertex(b);
-            graph.AddVertex(c);
-            graph.AddVertex(d);
-            graph.AddVertex(e);
-            graph.AddVertex(f);
-            graph.AddVertex(h);
-            graph.AddVertex(k);
+            bool flag;
+            int choice;
+            do
+            {
+                Console.Write("Выберите тип графа:\n\t1. Взвешенный\n\t2. Невзвешенный\nВВОД:");
+                flag = int.TryParse(Console.ReadLine(), out choice);
+            } while (!flag);
+            switch (choice)
+            {
+                case 1:
+                    graph9.Weiting = true;
+                    break;
+                case 2:
+                    graph9.Weiting = false;
+                    break;
+            }
+        }
+
+        private static void GetOriented(ref Graph graph9)
+        {
+            bool flag;
+            int choice;
+            do
+            {
+                Console.Write("Выберите тип графа:\n\t1. Ориентированный\n\t2. Неориентированный\nВВОД:");
+                flag = int.TryParse(Console.ReadLine(), out choice);
+            } while (!flag);
+            switch (choice)
+            {
+                case 1:
+                    graph9.Oriented = true;
+                    break;
+                case 2:
+                    graph9.Oriented = false;
+                    break;
+            }
         }
     }
 }
