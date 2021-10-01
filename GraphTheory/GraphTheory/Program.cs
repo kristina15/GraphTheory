@@ -13,7 +13,7 @@ namespace GraphTheory
             int choice;
             do
             {
-                Console.Write("Выберите действие:\n\t1. Создать новый граф\n\t2. Считать из файла\nВВОД:");
+                Console.Write("Выберите действие:\n\t1. Создать новый граф\n\t2. Считать из файла\nВВОД: ");
                 flag = int.TryParse(Console.ReadLine(), out choice);
             } while (!flag);
             switch (choice)
@@ -31,7 +31,7 @@ namespace GraphTheory
             {
                 do
                 {
-                    Console.Write("Выберите действие:\n\t1. Добавить вершину\n\t2. Удалить вершину\n\t3. Добавить ребро\n\t4. Удалить ребро\n\t5. Показать граф\n\t6. Выход\nВВОД:");
+                    Console.Write("Выберите действие:\n\t1. Добавить вершину\n\t2. Удалить вершину\n\t3. Добавить ребро\n\t4. Удалить ребро\n\t5. Показать граф\n\t6. Выход\nВВОД: ");
                     flag = int.TryParse(Console.ReadLine(), out choice);
                 } while (!flag);
                 string name;
@@ -74,19 +74,7 @@ namespace GraphTheory
                         from = Console.ReadLine();
                         Console.Write("Введите имя вершины \"куда\": ");
                         to = Console.ReadLine();
-                        if (graph.Weiting)
-                        {
-                            Console.Write("Введите вес вершины: ");
-                            weight = Console.ReadLine();
-                            if (!string.IsNullOrWhiteSpace(weight))
-                            {
-                                graph.DeleteEdge(new Vertex(from), new Vertex(to), int.Parse(weight), graph.Oriented);
-                            }
-                        }
-                        else
-                        {
-                            graph.DeleteEdge(new Vertex(from), new Vertex(to), 1, graph.Oriented);
-                        }
+                        graph.DeleteEdge(new Vertex(from), new Vertex(to), graph.Oriented);
                         break;
                     case 5:
                         graph.Print();
@@ -151,6 +139,32 @@ namespace GraphTheory
                 case 2:
                     graph9.Oriented = false;
                     break;
+            }
+        }
+
+        public void Print(Graph g)
+        {
+            foreach (var item in g._vertexWeight)
+            {
+                Console.Write(item.Key.ToString() + ": ");
+                if (g.Weiting == false)
+                {
+                    foreach (var item2 in item.Value)
+                    {
+                        Console.Write(item2.Key + " ");
+                    }
+                }
+                else
+                {
+                    foreach (var item2 in item.Value)
+                    {
+                        Console.Write("(" + item2.Key + ",");
+                        Console.Write(item2.Value + ") ");
+
+                    }
+                }
+
+                Console.WriteLine();
             }
         }
     }

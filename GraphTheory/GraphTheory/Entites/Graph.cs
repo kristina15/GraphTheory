@@ -2,22 +2,19 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace GraphTheory.Entites
 {
     public class Graph
     {
-        private IDictionary<Vertex, Dictionary<Vertex, int>> _vertexWeight;
-        private Random _randomNumber;
+        public IDictionary<Vertex, Dictionary<Vertex, int>> _vertexWeight;
         public bool Oriented { get; set; }
         public bool Weiting { get; set; }
 
         public Graph()
         {
             _vertexWeight = new Dictionary<Vertex, Dictionary<Vertex, int>>();
-            _randomNumber = new Random();
             Oriented = true;
             Weiting = false;
         }
@@ -58,7 +55,6 @@ namespace GraphTheory.Entites
         public Graph(bool oriented)
         {
             _vertexWeight = new Dictionary<Vertex, Dictionary<Vertex, int>>();
-            _randomNumber = new Random();
             Oriented = oriented;
             Weiting = false;
         }
@@ -99,7 +95,6 @@ namespace GraphTheory.Entites
         public Graph(Graph G)
         {
             _vertexWeight = new Dictionary<Vertex, Dictionary<Vertex, int>>(G._vertexWeight);
-            _randomNumber = new Random();
             Oriented = G.Oriented;
             Weiting = G.Weiting;
         }
@@ -112,7 +107,7 @@ namespace GraphTheory.Entites
         {
             try
             {
-                if (_vertexWeight.Where(v => v.Key.Id == value.Id).Count() == 0)
+                if(!_vertexWeight.ContainsKey(value))
                 {
                     _vertexWeight.Add(value, new Dictionary<Vertex, int>());
                 }
@@ -134,14 +129,15 @@ namespace GraphTheory.Entites
         /// <param name="oriented"></param>
         public void AddEdge(Vertex from, Vertex to, int weight = 1, bool oriented = false)
         {
-            if (_vertexWeight.Keys.Any(v => v.Id == from.Id) && _vertexWeight.Keys.Any(v => v.Id == to.Id))
+            if (_vertexWeight.ContainsKey(from) && _vertexWeight.ContainsKey(to))
             {
-                foreach (var item in _vertexWeight)
+                try
                 {
-                    if (from.Id == item.Key.Id && _vertexWeight.Keys.Where(v => v == to).Count() != 0 && item.Value.Where(v => v.Key == to).Count() == 0)
-                    {
-                        item.Value.Add(to, weight);
-                    }
+                    _vertexWeight[from].Add(to, weight);
+                }
+                catch
+                {
+                    Console.WriteLine("Such edge already exists");
                 }
 
                 if (!Oriented && !oriented)
@@ -160,28 +156,15 @@ namespace GraphTheory.Entites
         /// </summary>
         /// <param name="value"></param>
         /// <param name="oriented"></param>
-        public void DeleteEdge(Vertex from, Vertex to, int weight = 1, bool oriented = false)
+        public void DeleteEdge(Vertex from, Vertex to, bool oriented = false)
         {
-            if (_vertexWeight.Keys.Any(v => v.Id == from.Id) && _vertexWeight.Keys.Any(v => v.Id == to.Id))
-            { 
-                foreach (var v in _vertexWeight)
-                {
-                    if (v.Key.Id == from.Id)
-                    {
-                        foreach (var e in v.Value)
-                        {
-                            if (e.Key.Id == to.Id && e.Value == weight)
-                            {
-                                v.Value.Remove(e.Key);
-                                break;
-                            }
-                        }
-                    }
-                }
+            if (_vertexWeight.ContainsKey(from) && _vertexWeight.ContainsKey(to) && _vertexWeight[from].ContainsKey(to))
+            {
+                _vertexWeight[from].Remove(to);
 
                 if (!Oriented && !oriented)
                 {
-                    DeleteEdge(to, from, weight, true);
+                    DeleteEdge(to, from, true);
                 }
             }
             else
@@ -196,26 +179,13 @@ namespace GraphTheory.Entites
         /// <param name="value"></param>
         public void DeleteVertex(Vertex value)
         {
-            if (_vertexWeight.Keys.Any(v => v.Id == value.Id))
-            { foreach (var v in _vertexWeight)
-                {
-                    foreach (var e in v.Value)
-                    {
-                        if (e.Key.Id == value.Id)
-                        {
-                            v.Value.Remove(e.Key);
-                            break;
-                        }
-                    }
-                }
+            if (_vertexWeight.ContainsKey(value))
+            {
+                _vertexWeight.Remove(value);
 
                 foreach (var v in _vertexWeight)
                 {
-                    if (v.Key.Id == value.Id)
-                    {
-                        _vertexWeight.Remove(v.Key);
-                        break;
-                    }
+                    v.Value.Remove(value);
                 }
             }
             else

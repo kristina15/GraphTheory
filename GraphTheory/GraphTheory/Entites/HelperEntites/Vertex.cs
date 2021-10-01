@@ -25,11 +25,6 @@
             Id = id.ToString();
         }
 
-        public override string ToString()
-        {
-            return $"{Id}";
-        }
-
         public static bool operator ==(Vertex v1, Vertex v2)
         {
             return v1.Id.Equals(v2.Id);
@@ -38,6 +33,21 @@
         public static bool operator !=(Vertex v1, Vertex v2)
         {
             return v1.Id.Equals(v2.Id);
+        }
+
+        public override bool Equals(object v2)
+        {
+            return this == (Vertex)v2;
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return Id;
         }
     }
 }
