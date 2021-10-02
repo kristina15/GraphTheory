@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace GraphTheory.Entites
@@ -27,8 +28,8 @@ namespace GraphTheory.Entites
         {
             using (StreamReader file = new StreamReader(path))
             {
-                Oriented = file.ReadLine()=="1"?true:false;
-                Weiting = file.ReadLine() == "1" ? true : false;
+                Oriented = file.ReadLine() == "1";
+                Weiting = file.ReadLine() == "1";
                 string[] vertex;
                 string[] StrFromFile = file.ReadToEnd().Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -71,16 +72,16 @@ namespace GraphTheory.Entites
                 {
                     foreach (var item2 in item.Value)
                     {
-                            Console.Write(item2.Key+" ");
+                        Console.Write(item2.Key + " ");
                     }
                 }
                 else
                 {
                     foreach (var item2 in item.Value)
                     {
-                            Console.Write("(" + item2.Key + ",");
-                            Console.Write(item2.Value + ") ");
-                        
+                        Console.Write("(" + item2.Key + ",");
+                        Console.Write(item2.Value + ") ");
+
                     }
                 }
 
@@ -105,21 +106,14 @@ namespace GraphTheory.Entites
         /// <param name="value"></param>
         public void AddVertex(Vertex value)
         {
-            try
+            if (_vertexWeight.ContainsKey(value))
             {
-                if(!_vertexWeight.ContainsKey(value))
-                {
-                    _vertexWeight.Add(value, new Dictionary<Vertex, int>());
-                }
-                else
-                {
-                    Console.WriteLine("Vertex already exists");
-                }
+                Console.WriteLine("Vertex already exists");
+                return;
             }
-            catch
-            {
-                Console.WriteLine("Uncorrect vertex");
-            }
+
+            _vertexWeight.Add(value, new Dictionary<Vertex, int>());
+
         }
 
         /// <summary>
@@ -129,25 +123,36 @@ namespace GraphTheory.Entites
         /// <param name="oriented"></param>
         public void AddEdge(Vertex from, Vertex to, int weight = 1, bool oriented = false)
         {
-            if (_vertexWeight.ContainsKey(from) && _vertexWeight.ContainsKey(to))
+            if (!ValidateFromAndToVertex(from, to))
             {
-                try
-                {
-                    _vertexWeight[from].Add(to, weight);
-                }
-                catch
-                {
-                    Console.WriteLine("Such edge already exists");
-                }
-
-                if (!Oriented && !oriented)
-                {
-                    AddEdge(to, from, weight, true);
-                }
+                return;
             }
-            else
+
+            if (_vertexWeight[from].ContainsKey(to))
             {
-                Console.WriteLine("Uncorrect edge");
+                Console.WriteLine("Such edge already exists");
+                return;
+            }
+
+            _vertexWeight[from].Add(to, weight);
+
+            if (!Oriented && !oriented)
+            {
+                AddEdge(to, from, weight, true);
+            }
+        }
+
+        public void GetGraphWithoutVertexWithSameDegree()
+        {
+            foreach (var item in _vertexWeight)
+            {
+                var sameDegree = item.Value.Where(v => _vertexWeight[v.Key].ContainsKey(item.Key)).Where(v=> _vertexWeight[v.Key].Values.Count == _vertexWeight[item.Key].Values.Count);
+
+                if (sameDegree.Any())
+                {
+                    DeleteEdge(item.Key, sameDegree.FirstOrDefault().Key);
+                    return;
+                }
             }
         }
 
@@ -158,18 +163,22 @@ namespace GraphTheory.Entites
         /// <param name="oriented"></param>
         public void DeleteEdge(Vertex from, Vertex to, bool oriented = false)
         {
-            if (_vertexWeight.ContainsKey(from) && _vertexWeight.ContainsKey(to) && _vertexWeight[from].ContainsKey(to))
+            if (!ValidateFromAndToVertex(from, to))
             {
-                _vertexWeight[from].Remove(to);
-
-                if (!Oriented && !oriented)
-                {
-                    DeleteEdge(to, from, true);
-                }
+                return;
             }
-            else
+
+            if (!_vertexWeight[from].ContainsKey(to))
             {
-                Console.WriteLine("Uncorrect edge");
+                Console.WriteLine($"Invalid way {from} -> {to}");
+                return;
+            }
+
+            _vertexWeight[from].Remove(to);
+
+            if (!Oriented && !oriented)
+            {
+                DeleteEdge(to, from, true);
             }
         }
 
@@ -179,18 +188,17 @@ namespace GraphTheory.Entites
         /// <param name="value"></param>
         public void DeleteVertex(Vertex value)
         {
-            if (_vertexWeight.ContainsKey(value))
+            if (!_vertexWeight.ContainsKey(value))
             {
-                _vertexWeight.Remove(value);
-
-                foreach (var v in _vertexWeight)
-                {
-                    v.Value.Remove(value);
-                }
+                Console.WriteLine("Invalid vertex");
+                return;
             }
-            else
+
+            _vertexWeight.Remove(value);
+
+            foreach (var v in _vertexWeight)
             {
-                Console.WriteLine("Uncorrect vertex");
+                v.Value.Remove(value);
             }
         }
 
@@ -216,6 +224,54 @@ namespace GraphTheory.Entites
                     sw.WriteLine(builder);
                 }
             }
+        }
+
+        public void GetHengingVertex_TaskLa6()
+        {
+            var hangingVertex = _vertexWeight.Where(v => v.Value.Count == 1);
+            foreach (var item in hangingVertex)
+            {
+                Console.Write($"{item.Key}, ");
+            }
+
+            Console.WriteLine();
+        }
+
+        public void GetInAndOutVertex(Vertex v)
+        {
+            if (!_vertexWeight.ContainsKey(v))
+            {
+                Console.WriteLine($"Invalid vertex {v}");
+                return;
+            }
+
+            foreach (var item in _vertexWeight[v])
+            {
+                if (_vertexWeight[item.Key].ContainsKey(v))
+                {
+                    Console.Write($"{item.Key}, ");
+                }
+            }
+
+            Console.WriteLine();
+        }
+
+
+        private bool ValidateFromAndToVertex(Vertex from, Vertex to)
+        {
+            if (!_vertexWeight.ContainsKey(from))
+            {
+                Console.WriteLine($"Invalid vertex {from}");
+                return false;
+            }
+
+            if (!_vertexWeight.ContainsKey(to))
+            {
+                Console.WriteLine($"Invalid vertex {to}");
+                return false;
+            }
+
+            return true;
         }
     }
 }

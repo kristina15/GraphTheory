@@ -31,7 +31,7 @@ namespace GraphTheory
             {
                 do
                 {
-                    Console.Write("Выберите действие:\n\t1. Добавить вершину\n\t2. Удалить вершину\n\t3. Добавить ребро\n\t4. Удалить ребро\n\t5. Показать граф\n\t6. Выход\nВВОД: ");
+                    Console.Write("Выберите действие:\n\t1. Добавить вершину\n\t2. Удалить вершину\n\t3. Добавить ребро\n\t4. Удалить ребро\n\t5. Показать граф\n\t6. Вывести все висячие вершины\n\t7. Вывести те вершины орграфа, которые являются одновременно заходящими и выходящими для заданной вершины.\n\t8. Построить граф, полученный однократным удалением рёбер, соединяющих вершины одинаковой степени.\n\t9. Выход\nВВОД: ");
                     flag = int.TryParse(Console.ReadLine(), out choice);
                 } while (!flag);
                 string name;
@@ -80,9 +80,19 @@ namespace GraphTheory
                         graph.Print();
                         break;
                     case 6:
+                        graph.GetHengingVertex_TaskLa6();
+                        break;
+                    case 7:
+                        Console.Write("Введите вершину: ");
+                        graph.GetInAndOutVertex(new Vertex(Console.ReadLine()));
+                        break;
+                    case 8:
+                        graph.GetGraphWithoutVertexWithSameDegree();
+                        break;
+                    case 9:
                         do
                         {
-                            Console.Write("Хотите сохранить изменения?\n\t1.Да\n\t2.Нет\nВВОД:");
+                            Console.Write("Хотите сохранить изменения?\n\t1.Да\n\t2.Нет\nВВОД: ");
                             flag = int.TryParse(Console.ReadLine(), out choice);
                         } while (!flag);
                         switch (choice)
@@ -94,8 +104,6 @@ namespace GraphTheory
                                 return;
                         }
                         break;
-                    case 7:
-                        return;
                     default:
                         break;
                 }
@@ -108,7 +116,7 @@ namespace GraphTheory
             int choice;
             do
             {
-                Console.Write("Выберите тип графа:\n\t1. Взвешенный\n\t2. Невзвешенный\nВВОД:");
+                Console.Write("Выберите тип графа:\n\t1. Взвешенный\n\t2. Невзвешенный\nВВОД: ");
                 flag = int.TryParse(Console.ReadLine(), out choice);
             } while (!flag);
             switch (choice)
@@ -128,7 +136,7 @@ namespace GraphTheory
             int choice;
             do
             {
-                Console.Write("Выберите тип графа:\n\t1. Ориентированный\n\t2. Неориентированный\nВВОД:");
+                Console.Write("Выберите тип графа:\n\t1. Ориентированный\n\t2. Неориентированный\nВВОД: ");
                 flag = int.TryParse(Console.ReadLine(), out choice);
             } while (!flag);
             switch (choice)
@@ -139,32 +147,6 @@ namespace GraphTheory
                 case 2:
                     graph9.Oriented = false;
                     break;
-            }
-        }
-
-        public void Print(Graph g)
-        {
-            foreach (var item in g._vertexWeight)
-            {
-                Console.Write(item.Key.ToString() + ": ");
-                if (g.Weiting == false)
-                {
-                    foreach (var item2 in item.Value)
-                    {
-                        Console.Write(item2.Key + " ");
-                    }
-                }
-                else
-                {
-                    foreach (var item2 in item.Value)
-                    {
-                        Console.Write("(" + item2.Key + ",");
-                        Console.Write(item2.Value + ") ");
-
-                    }
-                }
-
-                Console.WriteLine();
             }
         }
     }
