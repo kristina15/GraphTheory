@@ -61,35 +61,6 @@ namespace GraphTheory.Entites
         }
 
         /// <summary>
-        /// Вывод на консоль
-        /// </summary>
-        public void Print()
-        {
-            foreach (var item in _vertexWeight)
-            {
-                Console.Write(item.Key.ToString() + ": ");
-                if (Weiting == false)
-                {
-                    foreach (var item2 in item.Value)
-                    {
-                        Console.Write(item2.Key + " ");
-                    }
-                }
-                else
-                {
-                    foreach (var item2 in item.Value)
-                    {
-                        Console.Write("(" + item2.Key + ",");
-                        Console.Write(item2.Value + ") ");
-
-                    }
-                }
-
-                Console.WriteLine();
-            }
-        }
-
-        /// <summary>
         /// Конструктор - копия
         /// </summary>
         /// <param name="G"></param>

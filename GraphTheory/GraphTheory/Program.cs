@@ -77,7 +77,7 @@ namespace GraphTheory
                         graph.DeleteEdge(new Vertex(from), new Vertex(to), graph.Oriented);
                         break;
                     case 5:
-                        graph.Print();
+                        Print(graph);
                         break;
                     case 6:
                         graph.GetHengingVertex_TaskLa6();
@@ -147,6 +147,35 @@ namespace GraphTheory
                 case 2:
                     graph9.Oriented = false;
                     break;
+            }
+        }
+
+        /// <summary>
+        /// Вывод на консоль
+        /// </summary>
+        public static void Print(Graph g)
+        {
+            foreach (var item in g._vertexWeight)
+            {
+                Console.Write(item.Key.ToString() + ": ");
+                if (g.Weiting == false)
+                {
+                    foreach (var item2 in item.Value)
+                    {
+                        Console.Write(item2.Key + " ");
+                    }
+                }
+                else
+                {
+                    foreach (var item2 in item.Value)
+                    {
+                        Console.Write("(" + item2.Key + ",");
+                        Console.Write(item2.Value + ") ");
+
+                    }
+                }
+
+                Console.WriteLine();
             }
         }
     }
