@@ -115,9 +115,17 @@ namespace GraphTheory.Entites
 
         public void GetGraphWithoutVertexWithSameDegree()
         {
-            foreach (var item in _vertexWeight)
+            Dictionary<Vertex, int> list = _vertexWeight.Select(v => new KeyValuePair<Vertex, int>(v.Key, v.Value.Count)).ToDictionary(x=>x.Key, x=>x.Value);
+            foreach (var item in list)
             {
-                var sameDegree = item.Value.Where(v => _vertexWeight[v.Key].ContainsKey(item.Key)).Where(v=> _vertexWeight[v.Key].Values.Count == _vertexWeight[item.Key].Values.Count);
+                var sameDegree = list.Where(v => v.Value == item.Value && v.Key!=item.Key);
+                foreach (var item2 in sameDegree)
+                {
+                    if (_vertexWeight[item.Key].ContainsKey(item2.Key))
+                    {
+                        DeleteEdge(item.Key, item2.Key);
+                    }
+                }
 
                 if (sameDegree.Any())
                 {
