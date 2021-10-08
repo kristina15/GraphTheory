@@ -38,16 +38,35 @@ namespace GraphTheory.Entites
                     vertex = s.Split(' ');
                     AddVertex(new Vertex(vertex[0]));
                 }
-
-                foreach (var s in StrFromFile)
+                if (Oriented)
                 {
-                    vertex = s.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    var from = new Vertex(vertex[0]);
-                    for (int k = 1; k < vertex.Length; k += 2)
+                    foreach (var s in StrFromFile)
                     {
-                        var to = new Vertex(vertex[k]);
-                        int weight = int.Parse(vertex[k + 1]);
-                        AddEdge(from, to, weight);
+                        vertex = s.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        var from = new Vertex(vertex[0]);
+                        for (int k = 1; k < vertex.Length; k += 2)
+                        {
+                            var to = new Vertex(vertex[k]);
+                            int weight = int.Parse(vertex[k + 1]);
+                            AddEdge(from, to, weight);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var s in StrFromFile)
+                    {
+                        vertex = s.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        var from = new Vertex(vertex[0]);
+                        for (int k = 1; k < vertex.Length; k += 2)
+                        {
+                            var to = new Vertex(vertex[k]);
+                            int weight = int.Parse(vertex[k + 1]);
+                            if (!_vertexWeight[from].ContainsKey(to))
+                            {
+                                AddEdge(from, to, weight);
+                            }
+                        }
                     }
                 }
             }
@@ -77,7 +96,7 @@ namespace GraphTheory.Entites
         /// <param name="value"></param>
         public void AddVertex(Vertex value)
         {
-            if (_vertexWeight.ContainsKey(value))
+            if (_vertexWeight.ContainsKey(value) && !Oriented)
             {
                 Console.WriteLine("Vertex already exists");
                 return;
@@ -101,7 +120,15 @@ namespace GraphTheory.Entites
 
             if (_vertexWeight[from].ContainsKey(to))
             {
-                Console.WriteLine("Such edge already exists");
+                if (!Weiting)
+                {
+                    Console.WriteLine($"Already exists qdge {from}->{to}");
+                }
+                else
+                {
+                    Console.WriteLine($"Already exists qdge {from}->{to} with weight {_vertexWeight[from][to]}");
+                }
+
                 return;
             }
 
