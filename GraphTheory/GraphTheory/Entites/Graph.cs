@@ -9,6 +9,7 @@ namespace GraphTheory.Entites
 {
     public class Graph
     {
+        private const int MaxSize = int.MaxValue;
         public IDictionary<Vertex, Dictionary<Vertex, int>> _vertexWeight;
         public bool Oriented { get; set; }
         public bool Weiting { get; set; }
@@ -126,7 +127,7 @@ namespace GraphTheory.Entites
                 }
                 else
                 {
-                    Console.WriteLine($"Already exists qdge {from}->{to} with weight {_vertexWeight[from][to]}");
+                    Console.WriteLine($"Already exists edge {from}->{to} with weight {_vertexWeight[from][to]}");
                 }
 
                 return;
@@ -142,22 +143,39 @@ namespace GraphTheory.Entites
 
         public void GetGraphWithoutVertexWithSameDegree()
         {
-            Dictionary<Vertex, int> list = _vertexWeight.Select(v => new KeyValuePair<Vertex, int>(v.Key, v.Value.Count)).ToDictionary(x=>x.Key, x=>x.Value);
+            var list = new Dictionary<Vertex, Dictionary<Vertex, int>>();
+            foreach (var key in _vertexWeight.Keys)
+            {
+                foreach (var value in _vertexWeight[key])
+                {
+                    if (!list.ContainsKey(key))
+                    {
+                        list.Add(key, new Dictionary<Vertex, int> { [value.Key] = value.Value });
+                    }
+                    else
+                    {
+                        list[key].Add(value.Key, value.Value);
+                    }
+                }
+            }
+
             foreach (var item in list)
             {
-                var sameDegree = list.Where(v => v.Value == item.Value && v.Key!=item.Key);
-                foreach (var item2 in sameDegree)
+                var sameDegree = new List<Vertex>();
+                foreach (var item2 in list)
                 {
-                    if (_vertexWeight[item.Key].ContainsKey(item2.Key))
+                    if (item.Key != item2.Key && item.Value.Count == item2.Value.Count)
                     {
-                        DeleteEdge(item.Key, item2.Key);
+                        sameDegree.Add(item2.Key);
                     }
                 }
 
-                if (sameDegree.Any())
+                foreach (var item2 in sameDegree)
                 {
-                    DeleteEdge(item.Key, sameDegree.FirstOrDefault().Key);
-                    return;
+                    if (_vertexWeight[item.Key].ContainsKey(item2))
+                    {
+                        DeleteEdge(item.Key, item2);
+                    }
                 }
             }
         }
@@ -262,6 +280,123 @@ namespace GraphTheory.Entites
             Console.WriteLine();
         }
 
+        public void GetVertex(Vertex value)
+        {
+            var list = _vertexWeight.Where(v => !v.Value.ContainsKey(value)).Select(v => v.Key);
+            var s = list.Where(v => !_vertexWeight[value].ContainsKey(v));
+            foreach (var item in s)
+            {
+                Console.WriteLine(item);
+            }
+        }
+
+        //public void GetMinWay(Vertex u1, Vertex u2, Vertex v)
+        //{
+        //    if (!ValidateFromAndToVertex(u1, u2))
+        //    {
+        //        return;
+        //    }
+
+        //    if (!_vertexWeight.ContainsKey(v))
+        //    {
+        //        Console.WriteLine($"Invalid vertex {v}");
+        //        return;
+        //    }
+
+        //    Dijkstra(u1, u2, v);
+        //}
+
+        //private void Dijkstra(Vertex u1, Vertex u2, Vertex v)
+        //{
+        //    int matrixSize = _vertexWeight.Keys.Count;
+        //    var dist = new Dictionary<Vertex, int>();
+        //    var path = new Dictionary<Vertex, int>();
+        //    var checkPoint = new Dictionary<Vertex, bool>();
+
+        //    foreach (var item in _vertexWeight.Keys)
+        //    {
+        //        dist.Add(item, int.MaxValue);
+        //        checkPoint.Add(item, false);
+        //    }
+
+        //    dist[u1] = 0;
+
+        //    foreach (var item in _vertexWeight.Keys)
+        //    {
+        //        var minDist = MinDistance(dist, checkPoint);
+
+        //        checkPoint[minDist] = true;
+
+        //        foreach (var item2 in _vertexWeight.Keys)
+        //        {
+        //            if (!checkPoint[item2] && _vertexWeight[minDist].TryGetValue(item2, out int n) && dist[minDist] != int.MaxValue && dist[minDist] + _vertexWeight[minDist][item2] < dist[item2])
+        //            {
+        //                dist[item2] = dist[minDist] + _vertexWeight[minDist][item2];
+        //                path[item2] = minDist; //Заполняется массив предков
+        //            }
+        //        }
+        //    }
+
+        //    Console.WriteLine("Данные о путях(по Дейкстре):");
+        //    Console.WriteLine();
+        //    Console.WriteLine($"Наша начальная точка 1");
+
+        //    for (int i = 1; i < matrixSize; i++)
+        //    {
+        //        if (path[i] == 0)
+        //            Console.WriteLine($"Кратчайший путь: из 1 -> {i + 1} прямой | Мин.Расстояние: {dist[i]}");
+        //        else
+        //        {
+        //            var stack = new Stack<int>(); //Используем стэк для сохранения пути. Так как мы идем в обратном порядке, путь по итогу должен выводиться перевернтный
+        //            stack.Push(path[i] + 1);
+
+        //            Console.Write($"Кратчайший путь: из 1 -> ");
+
+        //            for (int j = path[i]; j != 0; j = path[j])
+        //            {
+        //                if (path[j] == 0)
+        //                    break;
+        //                else
+        //                {
+        //                    stack.Push(path[j]);
+        //                    j = path[j];
+        //                }
+
+        //            }
+
+        //            for (int j = 0; j <= stack.Count; j++)
+        //            {
+        //                if (j == stack.Count)
+        //                    Console.Write($"{i + 1} | Мин.Расстояние: {dist[i]}");
+        //                else
+        //                {
+        //                    Console.Write(stack.Pop() + " -> ");
+        //                    j = -1;
+        //                }
+        //            }
+
+        //            Console.WriteLine();
+
+        //        }
+        //    }
+        //}
+
+        //private Vertex MinDistance(Dictionary<Vertex, int> dist, Dictionary<Vertex, bool> sptSet)
+        //{
+        //    var min = int.MaxValue;
+        //    Vertex minIndex = null;
+
+        //    foreach (var item in dist.Keys)
+        //    {
+        //        if (!sptSet[item] && dist[item] <= min)
+        //        {
+        //            min = dist[item];
+        //            minIndex = item;
+        //        }
+        //    }
+
+        //    return minIndex;
+        //}
 
         private bool ValidateFromAndToVertex(Vertex from, Vertex to)
         {

@@ -32,7 +32,7 @@
 
         public static bool operator !=(Vertex v1, Vertex v2)
         {
-            return v1.Id.Equals(v2.Id);
+            return !(v1.Id.Equals(v2.Id));
         }
 
         public override bool Equals(object v2)
