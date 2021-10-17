@@ -9,10 +9,11 @@ namespace GraphTheory.Entites
 {
     public class Graph
     {
-        private const int MaxSize = int.MaxValue;
         public IDictionary<Vertex, Dictionary<Vertex, int>> _vertexWeight;
         public bool Oriented { get; set; }
         public bool Weiting { get; set; }
+        HashSet<Vertex> _usedVertex = new HashSet<Vertex>();
+        private IDictionary<Vertex, Dictionary<Vertex, int>> vertexWeight;
 
         public Graph()
         {
@@ -89,6 +90,25 @@ namespace GraphTheory.Entites
             _vertexWeight = new Dictionary<Vertex, Dictionary<Vertex, int>>(G._vertexWeight);
             Oriented = G.Oriented;
             Weiting = G.Weiting;
+        }
+
+        public Graph(IDictionary<Vertex, Dictionary<Vertex, int>> vertexWeight)
+        {
+            _vertexWeight = new Dictionary<Vertex, Dictionary<Vertex, int>>();
+            foreach (var key in vertexWeight.Keys)
+            {
+                foreach (var value in vertexWeight[key])
+                {
+                    if (!_vertexWeight.ContainsKey(key))
+                    {
+                        _vertexWeight.Add(key, new Dictionary<Vertex, int> { [value.Key] = value.Value });
+                    }
+                    else
+                    {
+                        _vertexWeight[key].Add(value.Key, value.Value);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -280,123 +300,105 @@ namespace GraphTheory.Entites
             Console.WriteLine();
         }
 
-        public void GetVertex(Vertex value)
+        /// <summary>
+        /// Поиск пути, соединяющего вершины u1 и u2 и не проходящий через вершину v.
+        /// </summary>
+        /// <param name="u1"></param>
+        /// <param name="u2"></param>
+        /// <param name="v"></param>
+        public void GetWay_Task_II_8(Vertex u1, Vertex u2, Vertex v)
         {
-            var list = _vertexWeight.Where(v => !v.Value.ContainsKey(value)).Select(v => v.Key);
-            var s = list.Where(v => !_vertexWeight[value].ContainsKey(v));
-            foreach (var item in s)
+            var newGraph = new Graph(_vertexWeight);
+            newGraph.DeleteVertex(v);
+            var dist = new Dictionary<Vertex, List<Vertex>>() { [u1] = new List<Vertex>() };
+            bfs(u1, ref newGraph, ref dist);
+
+            if (!dist.ContainsKey(u2))
             {
-                Console.WriteLine(item);
+                Console.WriteLine("К сожалению, такого пути не существует");
+            }
+            else
+            {
+                for (int i = dist[u2].Count - 1; i > -1; i--)
+                {
+                    Console.Write($"{dist[u2][i]} -> ");
+                }
+
+                Console.WriteLine($"{u2} ");
             }
         }
 
-        //public void GetMinWay(Vertex u1, Vertex u2, Vertex v)
-        //{
-        //    if (!ValidateFromAndToVertex(u1, u2))
-        //    {
-        //        return;
-        //    }
+        /// <summary>
+        /// Вывести все вершины, длины кратчайших (по числу дуг) путей от которых до всех остальных не превосходят k
+        /// </summary>
+        /// <param name="k"></param>
+        public void GetVertex_II_34(int k)
+        {
+            var dist = new Dictionary<Vertex, Dictionary<Vertex, int>>();
+            _usedVertex.Clear();
+            foreach (var item in _vertexWeight.Keys)
+            {
+                var dict = new Dictionary<Vertex, int>() { [item] = 0 };
+                dist.Add(item, dict);
+                dfs(item, ref dict);
+                _usedVertex.Clear();
+            }
 
-        //    if (!_vertexWeight.ContainsKey(v))
-        //    {
-        //        Console.WriteLine($"Invalid vertex {v}");
-        //        return;
-        //    }
+            var vs = dist.Where(v => v.Value.All(x => x.Value <= k)).Select(v => v.Key);
+            foreach (var item in vs)
+            {
+                Console.Write($"{item} ");
+            }
 
-        //    Dijkstra(u1, u2, v);
-        //}
+            Console.WriteLine();
+        }
 
-        //private void Dijkstra(Vertex u1, Vertex u2, Vertex v)
-        //{
-        //    int matrixSize = _vertexWeight.Keys.Count;
-        //    var dist = new Dictionary<Vertex, int>();
-        //    var path = new Dictionary<Vertex, int>();
-        //    var checkPoint = new Dictionary<Vertex, bool>();
+        /// <summary>
+        /// Обход в ширину
+        /// </summary>
+        /// <param name="u1"></param>
+        /// <param name="newGraph"></param>
+        /// <param name="dist"></param>
+        private void bfs(Vertex u1, ref Graph newGraph, ref Dictionary<Vertex, List<Vertex>> dist)
+        {
+            Queue<Vertex> queue = new Queue<Vertex>();
+            newGraph._usedVertex = new HashSet<Vertex> { u1 };
+            queue.Enqueue(u1);
+            while (queue.Count > 0)
+            {
+                var u = queue.Peek();
+                queue.Dequeue();
+                foreach (var item in newGraph._vertexWeight[u].Keys)
+                {
+                    if (!newGraph._usedVertex.Contains(item))
+                    {
+                        newGraph._usedVertex.Add(item);
+                        queue.Enqueue(item);
+                        dist.Add(item, new List<Vertex>() { u });
+                        dist[item].AddRange(dist[u]);
 
-        //    foreach (var item in _vertexWeight.Keys)
-        //    {
-        //        dist.Add(item, int.MaxValue);
-        //        checkPoint.Add(item, false);
-        //    }
+                    }
+                }
+            }
+        }
 
-        //    dist[u1] = 0;
-
-        //    foreach (var item in _vertexWeight.Keys)
-        //    {
-        //        var minDist = MinDistance(dist, checkPoint);
-
-        //        checkPoint[minDist] = true;
-
-        //        foreach (var item2 in _vertexWeight.Keys)
-        //        {
-        //            if (!checkPoint[item2] && _vertexWeight[minDist].TryGetValue(item2, out int n) && dist[minDist] != int.MaxValue && dist[minDist] + _vertexWeight[minDist][item2] < dist[item2])
-        //            {
-        //                dist[item2] = dist[minDist] + _vertexWeight[minDist][item2];
-        //                path[item2] = minDist; //Заполняется массив предков
-        //            }
-        //        }
-        //    }
-
-        //    Console.WriteLine("Данные о путях(по Дейкстре):");
-        //    Console.WriteLine();
-        //    Console.WriteLine($"Наша начальная точка 1");
-
-        //    for (int i = 1; i < matrixSize; i++)
-        //    {
-        //        if (path[i] == 0)
-        //            Console.WriteLine($"Кратчайший путь: из 1 -> {i + 1} прямой | Мин.Расстояние: {dist[i]}");
-        //        else
-        //        {
-        //            var stack = new Stack<int>(); //Используем стэк для сохранения пути. Так как мы идем в обратном порядке, путь по итогу должен выводиться перевернтный
-        //            stack.Push(path[i] + 1);
-
-        //            Console.Write($"Кратчайший путь: из 1 -> ");
-
-        //            for (int j = path[i]; j != 0; j = path[j])
-        //            {
-        //                if (path[j] == 0)
-        //                    break;
-        //                else
-        //                {
-        //                    stack.Push(path[j]);
-        //                    j = path[j];
-        //                }
-
-        //            }
-
-        //            for (int j = 0; j <= stack.Count; j++)
-        //            {
-        //                if (j == stack.Count)
-        //                    Console.Write($"{i + 1} | Мин.Расстояние: {dist[i]}");
-        //                else
-        //                {
-        //                    Console.Write(stack.Pop() + " -> ");
-        //                    j = -1;
-        //                }
-        //            }
-
-        //            Console.WriteLine();
-
-        //        }
-        //    }
-        //}
-
-        //private Vertex MinDistance(Dictionary<Vertex, int> dist, Dictionary<Vertex, bool> sptSet)
-        //{
-        //    var min = int.MaxValue;
-        //    Vertex minIndex = null;
-
-        //    foreach (var item in dist.Keys)
-        //    {
-        //        if (!sptSet[item] && dist[item] <= min)
-        //        {
-        //            min = dist[item];
-        //            minIndex = item;
-        //        }
-        //    }
-
-        //    return minIndex;
-        //}
+        /// <summary>
+        /// Поиск в глубину
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="dist"></param>
+        private void dfs(Vertex v, ref Dictionary<Vertex, int> dist)
+        {
+            _usedVertex.Add(v);
+            foreach (var item in _vertexWeight[v].Keys)
+            {
+                if (!_usedVertex.Contains(item))
+                {
+                    dist.Add(item, dist[v] + 1);
+                    dfs(item, ref dist);
+                }
+            }
+        }
 
         private bool ValidateFromAndToVertex(Vertex from, Vertex to)
         {
