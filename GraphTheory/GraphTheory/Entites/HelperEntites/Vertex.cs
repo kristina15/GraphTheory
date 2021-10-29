@@ -27,11 +27,26 @@
 
         public static bool operator ==(Vertex v1, Vertex v2)
         {
+            if (v1 is null || v2 is null)
+            {
+                return false;
+            }
+
             return v1.Id.Equals(v2.Id);
         }
 
         public static bool operator !=(Vertex v1, Vertex v2)
         {
+            if (v1 is null && v2 is null)
+            {
+                return false;
+            }
+
+            if(v1 is null || v2 is null)
+            {
+                return true;
+            }
+
             return !(v1.Id.Equals(v2.Id));
         }
 

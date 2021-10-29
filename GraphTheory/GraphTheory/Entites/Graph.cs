@@ -311,7 +311,7 @@ namespace GraphTheory.Entites
             var newGraph = new Graph(_vertexWeight);
             newGraph.DeleteVertex(v);
             var dist = new Dictionary<Vertex, List<Vertex>>() { [u1] = new List<Vertex>() };
-            bfs(u1, ref newGraph, ref dist);
+            dfs(u1, ref newGraph, ref dist);
 
             if (!dist.ContainsKey(u2))
             {
@@ -340,7 +340,7 @@ namespace GraphTheory.Entites
             {
                 var dict = new Dictionary<Vertex, int>() { [item] = 0 };
                 dist.Add(item, dict);
-                dfs(item, ref dict);
+                bfs(item, ref dict);
                 _usedVertex.Clear();
             }
 
@@ -354,29 +354,100 @@ namespace GraphTheory.Entites
         }
 
         /// <summary>
+        /// Поиск каркаса минимального веса по алгоритму Прима
+        /// </summary>
+        /// <returns></returns>
+        public IDictionary<Vertex, Dictionary<Vertex, int>> AlgorithmByPrim()
+        {
+            IDictionary<Vertex, Dictionary<Vertex, int>> MST = new Dictionary<Vertex, Dictionary<Vertex, int>>();
+            //неиспользованные ребра
+            IDictionary<Vertex, Dictionary<Vertex, int>> notUsedEdges = GetCopy();
+            //использованные вершины
+            List<Vertex> usedV = new List<Vertex>();
+            //неиспользованные вершины
+            List<Vertex> notUsedV = new List<Vertex>(_vertexWeight.Keys.ToList());
+            //выбираем случайную начальную вершину
+            Random rand = new Random();
+            usedV.Add(notUsedV[rand.Next(0, _vertexWeight.Keys.Count)]);
+            notUsedV.Remove(usedV[0]);
+            while (notUsedV.Count > 0)
+            {
+                KeyValuePair<Vertex, Vertex> minW = new KeyValuePair<Vertex, Vertex>();
+                //номер наименьшего ребра
+                //поиск наименьшего ребра
+                foreach (var v in notUsedEdges)
+                {
+                    foreach (var e in v.Value)
+                    {
+                        if ((usedV.Contains(v.Key) && notUsedV.Contains(e.Key)) || (usedV.Contains(e.Key) && notUsedV.Contains(v.Key)))
+                        {
+                            if (minW.Key != null)
+                            {
+                                if (e.Value < _vertexWeight[minW.Key][minW.Value])
+                                {
+                                    minW = new KeyValuePair<Vertex, Vertex>(v.Key, e.Key);
+                                }
+                            }
+                            else
+                            {
+                                minW = new KeyValuePair<Vertex, Vertex>(v.Key, e.Key);
+                            }
+                        }
+                    }
+                }
+                //заносим новую вершину в список использованных и удаляем ее из списка неиспользованных
+                if (usedV.Contains(minW.Key))
+                {
+                    usedV.Add(minW.Value);
+                    notUsedV.Remove(minW.Value);
+                }
+                else
+                {
+                    usedV.Add(minW.Key);
+                    notUsedV.Remove(minW.Value);
+                }
+                //заносим новое ребро в дерево и удаляем его из списка неиспользованных
+                if (MST.ContainsKey(minW.Key))
+                {
+                    MST[minW.Key].Add(minW.Value, _vertexWeight[minW.Key][minW.Value]);
+                }
+                else
+                {
+                    MST[minW.Key] = new Dictionary<Vertex, int> { [minW.Value] = _vertexWeight[minW.Key][minW.Value] };
+                }
+
+                notUsedEdges[minW.Key].Remove(minW.Value);
+                if (notUsedEdges[minW.Key].Count == 0)
+                {
+                    notUsedEdges.Remove(minW.Key);
+                }
+            }
+
+            return MST;
+        }
+
+        /// <summary>
         /// Обход в ширину
         /// </summary>
         /// <param name="u1"></param>
         /// <param name="newGraph"></param>
         /// <param name="dist"></param>
-        private void bfs(Vertex u1, ref Graph newGraph, ref Dictionary<Vertex, List<Vertex>> dist)
+        private void bfs(Vertex u1, ref Dictionary<Vertex, int> dist)
         {
             Queue<Vertex> queue = new Queue<Vertex>();
-            newGraph._usedVertex = new HashSet<Vertex> { u1 };
+            _usedVertex = new HashSet<Vertex> { u1 };
             queue.Enqueue(u1);
             while (queue.Count > 0)
             {
                 var u = queue.Peek();
                 queue.Dequeue();
-                foreach (var item in newGraph._vertexWeight[u].Keys)
+                foreach (var item in _vertexWeight[u].Keys)
                 {
-                    if (!newGraph._usedVertex.Contains(item))
+                    if (!_usedVertex.Contains(item))
                     {
-                        newGraph._usedVertex.Add(item);
+                        _usedVertex.Add(item);
                         queue.Enqueue(item);
-                        dist.Add(item, new List<Vertex>() { u });
-                        dist[item].AddRange(dist[u]);
-
+                        dist.Add(item, dist[u] + 1);
                     }
                 }
             }
@@ -387,15 +458,15 @@ namespace GraphTheory.Entites
         /// </summary>
         /// <param name="v"></param>
         /// <param name="dist"></param>
-        private void dfs(Vertex v, ref Dictionary<Vertex, int> dist)
+        private void dfs(Vertex v, ref Graph newGraph, ref Dictionary<Vertex, List<Vertex>> dist)
         {
-            _usedVertex.Add(v);
-            foreach (var item in _vertexWeight[v].Keys)
+            newGraph._usedVertex.Add(v);
+            foreach (var item in newGraph._vertexWeight[v].Keys)
             {
-                if (!_usedVertex.Contains(item))
+                if (!newGraph._usedVertex.Contains(item))
                 {
-                    dist.Add(item, dist[v] + 1);
-                    dfs(item, ref dist);
+                    dist.Add(item, new List<Vertex> { v });
+                    dfs(item, ref newGraph, ref dist);
                 }
             }
         }
@@ -415,6 +486,31 @@ namespace GraphTheory.Entites
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Копия словаря
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<Vertex, Dictionary<Vertex, int>> GetCopy()
+        {
+            var copy = new Dictionary<Vertex, Dictionary<Vertex, int>>();
+            foreach (var key in _vertexWeight.Keys)
+            {
+                foreach (var value in _vertexWeight[key])
+                {
+                    if (!copy.ContainsKey(key))
+                    {
+                        copy.Add(key, new Dictionary<Vertex, int> { [value.Key] = value.Value });
+                    }
+                    else
+                    {
+                        copy[key].Add(value.Key, value.Value);
+                    }
+                }
+            }
+
+            return copy;
         }
     }
 }
