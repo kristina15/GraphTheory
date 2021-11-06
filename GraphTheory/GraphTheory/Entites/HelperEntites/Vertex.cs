@@ -1,4 +1,6 @@
-﻿namespace GraphTheory.Entites.HelperEntites
+﻿using System.Collections.Generic;
+
+namespace GraphTheory.Entites.HelperEntites
 {
     public class Vertex
     {

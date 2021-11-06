@@ -1,5 +1,6 @@
 ﻿using GraphTheory.Entites.HelperEntites;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,7 +14,6 @@ namespace GraphTheory.Entites
         public bool Oriented { get; set; }
         public bool Weiting { get; set; }
         HashSet<Vertex> _usedVertex = new HashSet<Vertex>();
-        private IDictionary<Vertex, Dictionary<Vertex, int>> vertexWeight;
 
         public Graph()
         {
@@ -357,18 +357,27 @@ namespace GraphTheory.Entites
         /// Поиск каркаса минимального веса по алгоритму Прима
         /// </summary>
         /// <returns></returns>
-        public IDictionary<Vertex, Dictionary<Vertex, int>> AlgorithmByPrim()
+        public Graph AlgorithmByPrim()
         {
-            IDictionary<Vertex, Dictionary<Vertex, int>> MST = new Dictionary<Vertex, Dictionary<Vertex, int>>();
-            //неиспользованные ребра
+            if (Oriented && !Weiting)
+            {
+                Console.WriteLine("Граф должен быть взвешенным и неориентированным");
+                return null;
+            }
+
+            if (!_vertexWeight.Keys.All(v => IsNotIsolated(v)))
+            {
+                Console.WriteLine("Невозможно получить минимальное остовное дерево");
+                return null;
+            }
+
+            Graph MST = new Graph(false);
             IDictionary<Vertex, Dictionary<Vertex, int>> notUsedEdges = GetCopy();
-            //использованные вершины
             List<Vertex> usedV = new List<Vertex>();
-            //неиспользованные вершины
             List<Vertex> notUsedV = new List<Vertex>(_vertexWeight.Keys.ToList());
-            //выбираем случайную начальную вершину
             Random rand = new Random();
             usedV.Add(notUsedV[rand.Next(0, _vertexWeight.Keys.Count)]);
+            Console.WriteLine($"Начинаем поиск с вершины: {usedV[0]}");
             notUsedV.Remove(usedV[0]);
             while (notUsedV.Count > 0)
             {
@@ -407,15 +416,22 @@ namespace GraphTheory.Entites
                     notUsedV.Remove(minW.Value);
                 }
                 //заносим новое ребро в дерево и удаляем его из списка неиспользованных
-                if (MST.ContainsKey(minW.Key))
+                if (!MST.ContainsVertex(minW.Key))
                 {
-                    MST[minW.Key].Add(minW.Value, _vertexWeight[minW.Key][minW.Value]);
-                }
-                else
-                {
-                    MST[minW.Key] = new Dictionary<Vertex, int> { [minW.Value] = _vertexWeight[minW.Key][minW.Value] };
+                    MST.AddVertex(minW.Key);
                 }
 
+                if (!MST.ContainsVertex(minW.Value))
+                {
+                    MST.AddVertex(minW.Value);
+                }
+
+                if (!MST.ContainsEdge(minW.Key, minW.Value))
+                {
+                    MST.AddEdge(minW.Key, minW.Value, _vertexWeight[minW.Key][minW.Value]);
+                }
+
+                //удаляем ребро из неиспользованных ребер
                 notUsedEdges[minW.Key].Remove(minW.Value);
                 if (notUsedEdges[minW.Key].Count == 0)
                 {
@@ -424,6 +440,243 @@ namespace GraphTheory.Entites
             }
 
             return MST;
+        }
+
+        public bool ContainsVertex(Vertex v) => _vertexWeight.ContainsKey(v);
+
+        public bool ContainsEdge(Vertex u1, Vertex u2) => _vertexWeight[u1].ContainsKey(u2);
+
+        public bool IsNotIsolated(Vertex v) => _vertexWeight.Values.Any(u => u.ContainsKey(v));
+
+        public int GetWeightOfGraph()
+        {
+            var newGraph = new Graph(true);
+            foreach (var item in _vertexWeight)
+            {
+                foreach (var item2 in item.Value)
+                {
+                    if (!newGraph.ContainsVertex(item.Key))
+                    {
+                        newGraph.AddVertex(item.Key);
+                    }
+
+                    if (!newGraph.ContainsVertex(item2.Key))
+                    {
+                        newGraph.AddVertex(item2.Key);
+                    }
+
+                    if (!newGraph.ContainsEdge(item.Key, item2.Key) && !newGraph.ContainsEdge(item2.Key, item.Key))
+                    {
+                        newGraph.AddEdge(item.Key, item2.Key, _vertexWeight[item.Key][item2.Key]);
+                    }
+                }
+            }
+
+            return newGraph._vertexWeight.Sum(u => u.Value.Values.Sum());
+        }
+
+        public void IVa(Vertex v)
+        {
+            var dic = FordBellman(v);
+
+            foreach (var key in dic.Keys)
+            {
+                if (key != v)
+                {
+                    if (dic[key] != int.MaxValue)
+                    {
+                        Console.WriteLine($"{v} -> {key} = {dic[key]}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{v} -> {key} = маршрут отсутствует");
+                    }
+                }
+            }
+        }
+
+        public void IVc(Vertex v)
+        {
+            Dictionary<Vertex, int> nodes = new Dictionary<Vertex, int>();
+            _usedVertex.Clear();
+
+            foreach (var key in _vertexWeight.Keys)
+            {
+                nodes.Add(key, int.MaxValue);
+            }
+
+            nodes[v] = 0;
+
+            Dijkstra(v, ref nodes);
+
+            foreach (var key in nodes.Keys)
+            {
+                if (key != v)
+                {
+                    if (nodes[key] != int.MaxValue)
+                    {
+                        Console.WriteLine($"{key} -> {v} = {nodes[key]}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{key} -> {v} = маршрут отсутствует");
+                    }
+                }
+            }
+        }
+
+        public void IVb()
+        {
+            if (!_vertexWeight.Keys.All(v => IsNotIsolated(v)))
+            {
+                Console.WriteLine("Граф должен быть связным");
+                return;
+            }
+
+            var m = GetMatrix();
+            Floyd(ref m);
+
+            Dictionary<Vertex, long> l = new Dictionary<Vertex, long>();
+            var ind = _vertexWeight.Select((u, count) => new KeyValuePair<Vertex, int>(u.Key, count)).ToDictionary(a => a.Key, b => b.Value);
+            foreach (var item in ind)
+            {
+                var max = m[item.Value].Max();
+                l.Add(item.Key, max);
+            }
+
+            var min = l.Min(x => x.Value);
+            var r = l.Where(x => x.Value == min).ToList(); 
+
+            Console.Write($"Радиус = {min}\nЦентр графа: ");
+            foreach (var item in r)
+            {
+                Console.Write($"{item.Key} ");
+            }
+
+            Console.WriteLine();
+        }
+
+        /// <summary>
+        /// Алгоритм Форда-Беллмана
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        private Dictionary<Vertex, long> FordBellman(Vertex v)
+        {
+            Dictionary<Vertex, long> F = new Dictionary<Vertex, long>();
+            foreach (var key in _vertexWeight.Keys)
+            {
+                F.Add(key, int.MaxValue);
+            }
+            F[v] = 0;
+
+            for (int i = 0; i < _vertexWeight.Count; i++)
+            {
+                foreach (var node in _vertexWeight.Keys)
+                {
+                    foreach (var edge in _vertexWeight[node])
+                    {
+                        if (F[edge.Key] > F[node] + edge.Value)
+                        {
+                            F[edge.Key] = F[node] + edge.Value;
+                        }
+                    }
+                }
+            }
+
+            return F;
+        }
+
+        /// <summary>
+        /// Алгоритм Дейкстра
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="nodes"></param>
+        private void Dijkstra(Vertex v, ref Dictionary<Vertex, int> nodes)
+        {
+            _usedVertex.Add(v);
+
+            foreach (var key in _vertexWeight[v])
+            {
+                if (!_usedVertex.Contains(key.Key))
+                {
+                    foreach (var keys in _vertexWeight[v])
+                    {
+                        nodes[keys.Key] = Math.Min(nodes[keys.Key], keys.Value + nodes[v]);
+                    }
+                }
+            }
+
+            int minWeight = int.MaxValue;
+            Vertex minNode = null;
+            foreach (var key in _vertexWeight[v])
+            {
+                if (nodes[key.Key] < minWeight && !_usedVertex.Contains(key.Key))
+                {
+                    minWeight = nodes[key.Key];
+                    minNode = key.Key;
+                }
+            }
+
+            if (minNode != null)
+            {
+                Dijkstra(minNode, ref nodes);
+            }
+        }
+
+        /// <summary>
+        /// Алгоритм Флойда
+        /// </summary>
+        /// <param name="v"></param>
+        public void Floyd(ref long[][] m)
+        {
+            for (int k = 0; k < m.Length; k++)
+            {
+                for (int i = 0; i < m.Length; i++)
+                {
+                    for (int j = 0; j < m.Length; j++)
+                    {
+                        m[i][j] = Math.Min(m[i][j], m[i][k] + m[k][j]);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Получение матрицы смежности
+        /// </summary>
+        /// <returns></returns>
+        private long[][] GetMatrix()
+        {
+            int n = _vertexWeight.Keys.Count;
+            long[][] a = new long[n][];
+            for (int k = 0; k < n; k++)
+            {
+                a[k] = new long[n];
+            }
+
+            int i = 0;
+            foreach (var item in _vertexWeight.Keys)
+            {
+                int j = 0;
+                foreach (var item2 in _vertexWeight.Keys)
+                {
+                    if (_vertexWeight[item].ContainsKey(item2))
+                    {
+                        a[i][j] = _vertexWeight[item][item2];
+                    }
+                    else
+                    {
+                        a[i][j] = int.MaxValue;
+                    }
+
+                    j++;
+                }
+
+                i++;
+            }
+
+            return a;
         }
 
         /// <summary>
