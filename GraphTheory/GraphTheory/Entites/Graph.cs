@@ -319,6 +319,7 @@ namespace GraphTheory.Entites
             }
             else
             {
+                Console.Write($"{u1} -> ");
                 for (int i = dist[u2].Count - 1; i > -1; i--)
                 {
                     Console.Write($"{dist[u2][i]} -> ");
@@ -477,26 +478,6 @@ namespace GraphTheory.Entites
 
         public void IVa(Vertex v)
         {
-            var dic = FordBellman(v);
-
-            foreach (var key in dic.Keys)
-            {
-                if (key != v)
-                {
-                    if (dic[key] != int.MaxValue)
-                    {
-                        Console.WriteLine($"{v} -> {key} = {dic[key]}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{v} -> {key} = маршрут отсутствует");
-                    }
-                }
-            }
-        }
-
-        public void IVc(Vertex v)
-        {
             Dictionary<Vertex, int> nodes = new Dictionary<Vertex, int>();
             _usedVertex.Clear();
 
@@ -515,15 +496,59 @@ namespace GraphTheory.Entites
                 {
                     if (nodes[key] != int.MaxValue)
                     {
-                        Console.WriteLine($"{key} -> {v} = {nodes[key]}");
+                        Console.WriteLine($"{v} -> {key} = {nodes[key]}");
                     }
                     else
                     {
-                        Console.WriteLine($"{key} -> {v} = маршрут отсутствует");
+                        Console.WriteLine($"{v} -> {key} = маршрут отсутствует");
                     }
                 }
             }
         }
+
+        public void IVc(Vertex v)
+        {
+            if (!Oriented)
+            {
+                var dic = FordBellman(v);
+
+                foreach (var key in dic.Keys)
+                {
+                    if (key != v)
+                    {
+                        if (dic[key] != int.MaxValue)
+                        {
+                            Console.WriteLine($"{key} -> {v} = {dic[key]}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"{key} -> {v} = маршрут отсутствует");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var m = GetCopy();
+                Floyd(ref m);
+
+                foreach (var key in m.Keys)
+                {
+                    if (key != v)
+                    {
+                        if (m[key].ContainsKey(v))
+                        {
+                            Console.WriteLine($"{key} -> {v} = {m[key][v]}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"{key} -> {v} = маршрут отсутствует");
+                        }
+                    }
+                }
+            }
+        }
+
 
         public void IVb()
         {
@@ -533,19 +558,18 @@ namespace GraphTheory.Entites
                 return;
             }
 
-            var m = GetMatrix();
+            var m = GetCopy();
             Floyd(ref m);
 
             Dictionary<Vertex, long> l = new Dictionary<Vertex, long>();
-            var ind = _vertexWeight.Select((u, count) => new KeyValuePair<Vertex, int>(u.Key, count)).ToDictionary(a => a.Key, b => b.Value);
-            foreach (var item in ind)
+            foreach (var item in _vertexWeight.Keys)
             {
-                var max = m[item.Value].Max();
-                l.Add(item.Key, max);
+                var max = m[item].Values.Max();
+                l.Add(item, max);
             }
 
             var min = l.Min(x => x.Value);
-            var r = l.Where(x => x.Value == min).ToList(); 
+            var r = l.Where(x => x.Value == min).ToList();
 
             Console.Write($"Радиус = {min}\nЦентр графа: ");
             foreach (var item in r)
@@ -576,10 +600,7 @@ namespace GraphTheory.Entites
                 {
                     foreach (var edge in _vertexWeight[node])
                     {
-                        if (F[edge.Key] > F[node] + edge.Value)
-                        {
-                            F[edge.Key] = F[node] + edge.Value;
-                        }
+                        F[edge.Key] = Math.Min(F[edge.Key], F[node] + edge.Value);
                     }
                 }
             }
@@ -628,55 +649,29 @@ namespace GraphTheory.Entites
         /// Алгоритм Флойда
         /// </summary>
         /// <param name="v"></param>
-        public void Floyd(ref long[][] m)
+        public void Floyd(ref Dictionary<Vertex, Dictionary<Vertex, int>> m)
         {
-            for (int k = 0; k < m.Length; k++)
+            foreach (var k in _vertexWeight.Keys)
             {
-                for (int i = 0; i < m.Length; i++)
+                foreach (var i in _vertexWeight.Keys)
                 {
-                    for (int j = 0; j < m.Length; j++)
+                    foreach (var j in _vertexWeight.Keys)
                     {
-                        m[i][j] = Math.Min(m[i][j], m[i][k] + m[k][j]);
+                        if (i == j && !m[i].ContainsKey(j))
+                        {
+                            m[i].Add(j, 0);
+                        }
+                        else if (m[i].ContainsKey(j) && m[i].ContainsKey(k) && m[k].ContainsKey(j))
+                        {
+                            m[i][j] = Math.Min(m[i][j], m[i][k] + m[k][j]);
+                        }
+                        else if (m[i].ContainsKey(k) && m[k].ContainsKey(j))
+                        {
+                            m[i].Add(j, m[i][k] + m[k][j]);
+                        }
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Получение матрицы смежности
-        /// </summary>
-        /// <returns></returns>
-        private long[][] GetMatrix()
-        {
-            int n = _vertexWeight.Keys.Count;
-            long[][] a = new long[n][];
-            for (int k = 0; k < n; k++)
-            {
-                a[k] = new long[n];
-            }
-
-            int i = 0;
-            foreach (var item in _vertexWeight.Keys)
-            {
-                int j = 0;
-                foreach (var item2 in _vertexWeight.Keys)
-                {
-                    if (_vertexWeight[item].ContainsKey(item2))
-                    {
-                        a[i][j] = _vertexWeight[item][item2];
-                    }
-                    else
-                    {
-                        a[i][j] = int.MaxValue;
-                    }
-
-                    j++;
-                }
-
-                i++;
-            }
-
-            return a;
         }
 
         /// <summary>
@@ -750,16 +745,10 @@ namespace GraphTheory.Entites
             var copy = new Dictionary<Vertex, Dictionary<Vertex, int>>();
             foreach (var key in _vertexWeight.Keys)
             {
+                copy.Add(key, new Dictionary<Vertex, int>());
                 foreach (var value in _vertexWeight[key])
                 {
-                    if (!copy.ContainsKey(key))
-                    {
-                        copy.Add(key, new Dictionary<Vertex, int> { [value.Key] = value.Value });
-                    }
-                    else
-                    {
-                        copy[key].Add(value.Key, value.Value);
-                    }
+                    copy[key].Add(value.Key, value.Value);
                 }
             }
 
